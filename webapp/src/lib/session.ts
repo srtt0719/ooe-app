@@ -3,8 +3,8 @@ import { cookies } from "next/headers";
 
 // 共通パスワード＋利用者選択の軽量セッション。
 // セッションは60日間保持し、その間はパスワード入力なしで使える。
-const SESSION_COOKIE = "daiei_session";
-const PASSWORD_OK_COOKIE = "daiei_pw_ok";
+const SESSION_COOKIE = "ooe_session";
+const PASSWORD_OK_COOKIE = "ooe_pw_ok";
 const SESSION_DAYS = 60;
 
 function secret(): string {
