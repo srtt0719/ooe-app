@@ -1,0 +1,221 @@
+// 大栄製作所 製作・現場管理アプリ — フェーズ1 データベース定義
+// 仕様書.md 3章の承認済みDDLに対応。実装時の注意(7章)により、
+// マスタ系の値は必ずテーブルから読み、コードに直書きしない。
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ---------- 3-10 ユーザー ----------
+model User {
+  userId       Int      @id @default(autoincrement()) @map("user_id")
+  userName     String   @map("user_name")
+  loginId      String?  @map("login_id")
+  passwordHash String?  @map("password_hash")
+  lineworksId  String?  @map("lineworks_id")
+  isActive     Boolean  @default(true) @map("is_active")
+
+  managedSites Site[]   @relation("SiteManager")
+
+  @@map("users")
+}
+
+// ---------- 3-1 現場 ----------
+model Site {
+  siteId           Int       @id @default(autoincrement()) @map("site_id")
+  orderNumber      String?   @map("order_number")
+  siteName         String    @map("site_name")
+  clientName       String?   @map("client_name")
+  siteAddress      String?   @map("site_address")
+  deliveryDueDate  DateTime? @map("delivery_due_date") @db.Date
+  managerUserId    Int?      @map("manager_user_id")
+  manager          User?     @relation("SiteManager", fields: [managerUserId], references: [userId])
+  status           String    @default("進行中")
+  note             String?
+  isDeleted        Boolean   @default(false) @map("is_deleted")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @default(now()) @updatedAt @map("updated_at")
+
+  products         Product[]
+  files            File[]
+
+  @@map("sites")
+}
+
+// ---------- 3-2 製品 ----------
+model Product {
+  productId             Int       @id @default(autoincrement()) @map("product_id")
+  siteId                Int       @map("site_id")
+  site                  Site      @relation(fields: [siteId], references: [siteId])
+  orderNumber           String?   @map("order_number")
+  productName           String    @map("product_name")
+  quantity              Int?
+  material              String?
+  thickness             String?
+  finish                String?
+  drawingNumber         String?   @map("drawing_number")
+  processDueDate        DateTime? @map("process_due_date") @db.Date
+  deliveryDate          DateTime? @map("delivery_date") @db.Date
+  materialStatus        String?   @default("未発注") @map("material_status")
+  materialArrivalDate   DateTime? @map("material_arrival_date") @db.Date
+  surfaceType           String?   @map("surface_type")
+  vendorName            String?   @map("vendor_name")
+  vendorSendDate        DateTime? @map("vendor_send_date") @db.Date
+  vendorReturnPlanned   DateTime? @map("vendor_return_planned") @db.Date
+  vendorReturnActual    DateTime? @map("vendor_return_actual") @db.Date
+  status                String    @default("未着手")
+  isDeleted             Boolean   @default(false) @map("is_deleted")
+  note                  String?
+  createdAt             DateTime  @default(now()) @map("created_at")
+  updatedAt             DateTime  @default(now()) @updatedAt @map("updated_at")
+
+  processes             Process[]
+  checkRecords          CheckRecord[]
+  materialDetails       MaterialDetail[]
+  files                 File[]
+  notifications         Notification[]
+
+  @@index([siteId])
+  @@index([drawingNumber])
+  @@map("products")
+}
+
+// ---------- 3-3 工程テンプレート(マスタ) ----------
+model ProcessTemplate {
+  templateId   Int     @id @default(autoincrement()) @map("template_id")
+  templateName String  @map("template_name")
+  processName  String  @map("process_name")
+  weight       Int
+  sortOrder    Int     @map("sort_order")
+  alertMessage String? @map("alert_message")
+
+  @@map("process_templates")
+}
+
+// ---------- 3-4 工程(製品ごとにテンプレートをコピーして生成) ----------
+model Process {
+  processId   Int       @id @default(autoincrement()) @map("process_id")
+  productId   Int       @map("product_id")
+  product     Product   @relation(fields: [productId], references: [productId])
+  processName String    @map("process_name")
+  weight      Int
+  sortOrder   Int       @map("sort_order")
+  isCompleted Boolean   @default(false) @map("is_completed")
+  startedAt   DateTime? @map("started_at")
+  startedBy   String?   @map("started_by")
+  completedAt DateTime? @map("completed_at")
+  completedBy String?   @map("completed_by")
+
+  @@index([productId])
+  @@map("processes")
+}
+
+// ---------- 3-5 チェック項目(マスタ) ----------
+model CheckItem {
+  itemId    Int     @id @default(autoincrement()) @map("item_id")
+  itemName  String  @map("item_name")
+  sortOrder Int     @map("sort_order")
+  isActive  Boolean @default(true) @map("is_active")
+
+  @@map("check_items")
+}
+
+// ---------- 3-6 チェック記録(追記のみ) ----------
+model CheckRecord {
+  recordId    Int      @id @default(autoincrement()) @map("record_id")
+  productId   Int      @map("product_id")
+  product     Product  @relation(fields: [productId], references: [productId])
+  itemName    String   @map("item_name")
+  result      String
+  checkerName String?  @map("checker_name")
+  checkedAt   DateTime @default(now()) @map("checked_at")
+  note        String?
+
+  @@index([productId])
+  @@map("check_records")
+}
+
+// ---------- 3-7 部材マスタ ----------
+model MaterialMaster {
+  materialId    Int     @id @default(autoincrement()) @map("material_id")
+  materialCode  String? @map("material_code")
+  materialType  String? @map("material_type")
+  materialGrade String? @map("material_grade")
+  sizeSpec      String? @map("size_spec")
+  unit          String?
+  isActive      Boolean @default(true) @map("is_active")
+
+  materialDetails MaterialDetail[]
+
+  @@map("material_masters")
+}
+
+// ---------- 3-8 部材明細 ★将来連携の要。フェーズ1で必ず作成 ----------
+model MaterialDetail {
+  detailId           Int             @id @default(autoincrement()) @map("detail_id")
+  productId          Int             @map("product_id")
+  product            Product         @relation(fields: [productId], references: [productId])
+  materialId         Int?            @map("material_id")
+  material           MaterialMaster? @relation(fields: [materialId], references: [materialId])
+  partName           String?         @map("part_name")
+  materialGrade      String?         @map("material_grade")
+  sizeSpec           String?         @map("size_spec")
+  length             Decimal?
+  unit               String?
+  quantityEstimated  Decimal?        @map("quantity_estimated")
+  quantityActual     Decimal?        @map("quantity_actual")
+  source             String?
+  note               String?
+
+  @@index([productId])
+  @@map("material_details")
+}
+
+// ---------- 3-9 ファイル(実体はGoogle Drive。DBにはパスのみ) ----------
+model File {
+  fileId          Int      @id @default(autoincrement()) @map("file_id")
+  siteId          Int?     @map("site_id")
+  site            Site?    @relation(fields: [siteId], references: [siteId])
+  productId       Int?     @map("product_id")
+  product         Product? @relation(fields: [productId], references: [productId])
+  fileName        String?  @map("file_name")
+  fileType        String?  @map("file_type")
+  filePath        String   @map("file_path")
+  category        String?
+  originalName    String?  @map("original_name")
+  extractedText   String?  @map("extracted_text")
+  matchStatus     String?  @map("match_status")
+  matchConfidence Decimal? @map("match_confidence")
+  uploadedAt      DateTime @default(now()) @map("uploaded_at")
+
+  @@index([siteId])
+  @@index([productId])
+  @@map("files")
+}
+
+// ---------- 3-11 設定(通知先・時刻・判定日数など。コード直書き禁止) ----------
+model Setting {
+  key   String @id
+  value String?
+
+  @@map("settings")
+}
+
+// ---------- 3-12 通知履歴 ----------
+model Notification {
+  notificationId Int      @id @default(autoincrement()) @map("notification_id")
+  productId      Int?     @map("product_id")
+  product        Product? @relation(fields: [productId], references: [productId])
+  notifyType     String   @map("notify_type")
+  target         String?
+  message        String?
+  sentAt         DateTime @default(now()) @map("sent_at")
+  status         String?
+
+  @@map("notifications")
+}
