@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { fmtDate } from "@/lib/format";
+import { AppHeader } from "@/components/AppHeader";
 
 export default async function ProductDetailPage({
   params,
@@ -20,19 +21,11 @@ export default async function ProductDetailPage({
 
   return (
     <div>
-      <div className="head">
-        <Link
-          className="btn ghost"
-          href={`/sites/${product.siteId}`}
-          style={{ color: "#fff", padding: "0 2px" }}
-        >
-          ‹
-        </Link>
-        <h1>
-          {product.productName}
-          <div className="hsub">{product.site.siteName}</div>
-        </h1>
-      </div>
+      <AppHeader
+        title={product.productName}
+        subtitle={product.site.siteName}
+        backHref={`/sites/${product.siteId}`}
+      />
       <div className="wrap">
         <div className="card">
           <div className="row">

@@ -3,6 +3,7 @@ import { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 import { fmtDate, isNear } from "@/lib/format";
 import { DAYS_BEFORE_NEAR } from "@/lib/constants";
+import { AppHeader } from "@/components/AppHeader";
 
 const FILTERS = [
   { key: "all", label: "すべて" },
@@ -54,15 +55,7 @@ export default async function ProductListPage({
 
   return (
     <div>
-      <div className="head">
-        <Link className="btn ghost" href="/" style={{ color: "#fff", padding: "0 2px" }}>
-          ‹
-        </Link>
-        <h1>
-          納期順
-          <div className="hsub">進行状況</div>
-        </h1>
-      </div>
+      <AppHeader title="納期順" subtitle="進行状況" />
       <div className="wrap">
         <div className="sorter">
           <Link href="/sites">現場順</Link>

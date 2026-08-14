@@ -1,9 +1,9 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { ProductForm } from "../../ProductForm";
 import { updateProduct, deleteProduct } from "../../actions";
 import { DeleteSection } from "@/components/DeleteSection";
+import { AppHeader } from "@/components/AppHeader";
 
 export default async function EditProductPage({
   params,
@@ -36,19 +36,11 @@ export default async function EditProductPage({
 
   return (
     <div>
-      <div className="head">
-        <Link
-          className="btn ghost"
-          href={`/products/${productId}`}
-          style={{ color: "#fff", padding: "0 2px" }}
-        >
-          ‹
-        </Link>
-        <h1>
-          製品を編集
-          <div className="hsub">{product.productName}</div>
-        </h1>
-      </div>
+      <AppHeader
+        title="製品を編集"
+        subtitle={product.productName}
+        backHref={`/products/${productId}`}
+      />
       <div className="wrap">
         <ProductForm
           action={boundUpdate}

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { fmtDate, isNear } from "@/lib/format";
 import { DAYS_BEFORE_NEAR } from "@/lib/constants";
+import { AppHeader } from "@/components/AppHeader";
 
 export default async function SiteListPage({
   searchParams,
@@ -32,15 +33,7 @@ export default async function SiteListPage({
 
   return (
     <div>
-      <div className="head">
-        <Link className="btn ghost" href="/" style={{ color: "#fff", padding: "0 2px" }}>
-          ‹
-        </Link>
-        <h1>
-          全現場・製品
-          <div className="hsub">現場順</div>
-        </h1>
-      </div>
+      <AppHeader title="全現場・製品" subtitle="現場順" />
       <div className="wrap">
         <form>
           <input

@@ -1,7 +1,7 @@
-import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { ProductForm } from "../ProductForm";
 import { createProduct } from "../actions";
+import { AppHeader } from "@/components/AppHeader";
 
 export default async function NewProductPage({
   searchParams,
@@ -30,15 +30,11 @@ export default async function NewProductPage({
 
   return (
     <div>
-      <div className="head">
-        <Link className="btn ghost" href={backHref} style={{ color: "#fff", padding: "0 2px" }}>
-          ‹
-        </Link>
-        <h1>
-          製品を登録
-          <div className="hsub">{site ? site.siteName : "新規"}</div>
-        </h1>
-      </div>
+      <AppHeader
+        title="製品を登録"
+        subtitle={site ? site.siteName : "新規"}
+        backHref={backHref}
+      />
       <div className="wrap">
         <ProductForm
           action={createProduct}

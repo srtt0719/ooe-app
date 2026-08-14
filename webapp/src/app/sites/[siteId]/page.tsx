@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { fmtDate, isNear } from "@/lib/format";
 import { DAYS_BEFORE_NEAR } from "@/lib/constants";
+import { AppHeader } from "@/components/AppHeader";
 
 export default async function SiteDetailPage({
   params,
@@ -27,15 +28,7 @@ export default async function SiteDetailPage({
 
   return (
     <div>
-      <div className="head">
-        <Link className="btn ghost" href="/sites" style={{ color: "#fff", padding: "0 2px" }}>
-          ‹
-        </Link>
-        <h1>
-          {site.siteName}
-          <div className="hsub">現場</div>
-        </h1>
-      </div>
+      <AppHeader title={site.siteName} subtitle="現場" backHref="/sites" />
       <div className="wrap">
         <div className="card">
           <div className="row">
