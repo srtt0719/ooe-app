@@ -91,6 +91,7 @@ body {
 }
 
 .card {
+  display: block;
   background: var(--card);
   border: 1px solid var(--hair);
   border-radius: 3px;
@@ -182,6 +183,7 @@ body {
 }
 
 .btn {
+  display: inline-block;
   border: 1px solid var(--ink);
   background: var(--ink);
   color: #fff;
