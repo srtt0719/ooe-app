@@ -20,19 +20,6 @@ function readSiteFields(formData: FormData) {
   };
 }
 
-export async function createSite(
-  _prevState: FormState,
-  formData: FormData,
-): Promise<FormState> {
-  const fields = readSiteFields(formData);
-  if (!fields.siteName) {
-    return { error: "現場名を入力してください" };
-  }
-
-  const site = await prisma.site.create({ data: fields });
-  redirect(`/sites/${site.siteId}`);
-}
-
 export async function updateSite(
   siteId: number,
   _prevState: FormState,

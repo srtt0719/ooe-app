@@ -1,8 +1,9 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState } from "react";
 import { SITE_STATUS } from "@/lib/constants";
 import { toInputDate } from "@/lib/format";
+import { RadioSeg3 } from "@/components/RadioSeg3";
 import type { FormState } from "./actions";
 
 type SiteInitial = {
@@ -120,7 +121,7 @@ export function SiteForm({
         {showStatus && (
           <div className="fld">
             <label>状態</label>
-            <StatusToggle defaultValue={v.status} />
+            <RadioSeg3 name="status" options={SITE_STATUS} defaultValue={v.status} />
           </div>
         )}
         <div className="fld">
@@ -140,24 +141,5 @@ export function SiteForm({
         {pending ? "保存中…" : submitLabel}
       </button>
     </form>
-  );
-}
-
-function StatusToggle({ defaultValue }: { defaultValue: string }) {
-  const [value, setValue] = useState(defaultValue);
-  return (
-    <div className="seg3">
-      <input type="hidden" name="status" value={value} />
-      {SITE_STATUS.map((s) => (
-        <button
-          key={s}
-          type="button"
-          className={s === value ? "on" : ""}
-          onClick={() => setValue(s)}
-        >
-          {s}
-        </button>
-      ))}
-    </div>
   );
 }

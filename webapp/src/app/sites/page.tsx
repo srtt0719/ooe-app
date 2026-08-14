@@ -57,10 +57,6 @@ export default async function SiteListPage({
           <Link href="/products">納期順</Link>
         </div>
 
-        <Link className="add" href="/sites/new">
-          ＋ 現場を登録
-        </Link>
-
         {sites.length === 0 && (
           <p className="sub" style={{ marginTop: 16 }}>
             該当する現場がありません。
