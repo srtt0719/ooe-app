@@ -61,6 +61,15 @@ export async function uncompleteProcess(processId: number, productId: number) {
   await revalidateProductViews(productId);
 }
 
+// 着手操作の取り消し。未着手の状態まで戻す。
+export async function unstartProcess(processId: number, productId: number) {
+  await prisma.process.update({
+    where: { processId },
+    data: { startedAt: null, startedBy: null },
+  });
+  await revalidateProductViews(productId);
+}
+
 export async function applyTemplateToProduct(productId: number, formData: FormData) {
   const templateName = String(formData.get("templateName") ?? "").trim();
   if (!templateName) return;

@@ -2,7 +2,12 @@
 
 import { useState, useTransition } from "react";
 import { fmtDateTime } from "@/lib/format";
-import { startProcess, completeProcess, uncompleteProcess } from "@/app/products/processActions";
+import {
+  startProcess,
+  completeProcess,
+  uncompleteProcess,
+  unstartProcess,
+} from "@/app/products/processActions";
 import type { AlertInfo } from "@/lib/processAlert";
 
 type ProcessData = {
@@ -27,7 +32,9 @@ export function ProcessRow({
   defaultUserName: string;
 }) {
   const [pending, startTransition] = useTransition();
-  const [dialog, setDialog] = useState<"start" | "complete" | "uncomplete" | null>(null);
+  const [dialog, setDialog] = useState<
+    "start" | "complete" | "uncomplete" | "unstart" | null
+  >(null);
   const [name, setName] = useState(defaultUserName);
 
   const isStarted = Boolean(process.startedAt);
@@ -61,6 +68,13 @@ export function ProcessRow({
     });
   }
 
+  function confirmUnstart() {
+    setDialog(null);
+    startTransition(() => {
+      unstartProcess(process.processId, productId);
+    });
+  }
+
   return (
     <>
       <div className="proc">
@@ -86,9 +100,20 @@ export function ProcessRow({
           </button>
         )}
         {!isDone && isStarted && (
-          <button className="btn done" type="button" disabled={pending} onClick={() => openDialog("complete")}>
-            完了
-          </button>
+          <>
+            <button
+              className="btn ghost"
+              type="button"
+              disabled={pending}
+              onClick={() => setDialog("unstart")}
+              style={{ fontSize: 11.5, padding: "6px 10px", color: "var(--steel)" }}
+            >
+              戻る
+            </button>
+            <button className="btn done" type="button" disabled={pending} onClick={() => openDialog("complete")}>
+              完了
+            </button>
+          </>
         )}
         {isDone && (
           <button
@@ -185,6 +210,27 @@ export function ProcessRow({
                 やめる
               </button>
               <button className="btn" type="button" onClick={confirmUncomplete}>
+                取り消す
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {dialog === "unstart" && (
+        <div className="veil">
+          <div className="modal">
+            <div className="mh">
+              <h3>{process.processName}の着手を取り消しますか</h3>
+              <p style={{ fontSize: 13.5, color: "var(--steel)", marginTop: 9, lineHeight: 1.6 }}>
+                未着手の状態に戻ります。着手者の記録は消えます。
+              </p>
+            </div>
+            <div className="mf">
+              <button className="btn ghost" type="button" onClick={() => setDialog(null)}>
+                やめる
+              </button>
+              <button className="btn" type="button" onClick={confirmUnstart}>
                 取り消す
               </button>
             </div>
