@@ -1,0 +1,116 @@
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { prisma } from "@/lib/prisma";
+import { fmtDate, isNear } from "@/lib/format";
+import { DAYS_BEFORE_NEAR } from "@/lib/constants";
+
+export default async function SiteDetailPage({
+  params,
+}: {
+  params: Promise<{ siteId: string }>;
+}) {
+  const { siteId: siteIdStr } = await params;
+  const siteId = Number(siteIdStr);
+
+  const site = await prisma.site.findUnique({
+    where: { siteId },
+    include: {
+      manager: true,
+      products: {
+        where: { isDeleted: false },
+        orderBy: { productName: "asc" },
+      },
+    },
+  });
+
+  if (!site || site.isDeleted) notFound();
+
+  return (
+    <div>
+      <div className="head">
+        <Link className="btn ghost" href="/sites" style={{ color: "#fff", padding: "0 2px" }}>
+          ‹
+        </Link>
+        <h1>
+          {site.siteName}
+          <div className="hsub">現場</div>
+        </h1>
+      </div>
+      <div className="wrap">
+        <div className="card">
+          <div className="row">
+            <div>
+              <div className="name">{site.siteName}</div>
+              <div className="sub">
+                {site.clientName}
+                {site.clientName && site.orderNumber && " ／ "}
+                {site.orderNumber && (
+                  <>
+                    注番 <span className="num">{site.orderNumber}</span>
+                  </>
+                )}
+              </div>
+            </div>
+            <Link className="btn ghost" href={`/sites/${site.siteId}/edit`}>
+              編集
+            </Link>
+          </div>
+          <div className="chips">
+            {site.deliveryDueDate && (
+              <span
+                className={`chip${isNear(site.deliveryDueDate, DAYS_BEFORE_NEAR) ? " alert" : ""}`}
+              >
+                現場搬入 {fmtDate(site.deliveryDueDate)}
+              </span>
+            )}
+            <span className="chip">{site.status}</span>
+            {site.manager && <span className="chip">担当 {site.manager.userName}</span>}
+          </div>
+          {site.siteAddress && <div className="sub" style={{ marginTop: 9 }}>{site.siteAddress}</div>}
+          {site.note && <div className="sub" style={{ marginTop: 5 }}>{site.note}</div>}
+        </div>
+
+        <div className="eyebrow">
+          製品 <span className="count">{site.products.length}</span>
+        </div>
+
+        <Link className="add" href={`/products/new?siteId=${site.siteId}`}>
+          ＋ 製品を登録
+        </Link>
+
+        {site.products.length === 0 && (
+          <p className="sub" style={{ marginTop: 4 }}>
+            まだ製品が登録されていません。
+          </p>
+        )}
+
+        {site.products.map((product) => (
+          <Link className="card tap" href={`/products/${product.productId}`} key={product.productId}>
+            <div className="row">
+              <div>
+                <div className="name">{product.productName}</div>
+                <div className="sub">
+                  {[product.material, product.thickness, product.finish, product.quantity ? `${product.quantity}台` : null]
+                    .filter(Boolean)
+                    .join(" ／ ")}
+                </div>
+              </div>
+              {product.processDueDate && (
+                <div
+                  className={`due${isNear(product.processDueDate, DAYS_BEFORE_NEAR) ? " near" : ""}`}
+                >
+                  {fmtDate(product.processDueDate)}
+                </div>
+              )}
+            </div>
+            {product.materialStatus === "未発注" && (
+              <div className="chips">
+                <span className="chip alert">材料 未発注</span>
+              </div>
+            )}
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+}

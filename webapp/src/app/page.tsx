@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getSessionUserId } from "@/lib/session";
@@ -26,24 +27,28 @@ export default async function MenuPage() {
     {
       no: "01",
       title: "新規登録",
-      desc: "図面を取り込む ／ 現場・製品を登録する",
+      desc: "現場・製品を登録する",
+      href: "/register",
     },
     {
       no: "02",
       title: "全現場・製品",
-      desc: "現場名・製品名・注番から図面を開く",
+      desc: "現場名・客先・注番から探す",
+      href: "/sites",
       badge: siteCount,
     },
     {
       no: "03",
       title: "納期順",
       desc: "製作の進行具合を確認する",
+      href: "/products",
       badge: productCount,
     },
     {
       no: "04",
       title: "作業終了リスト",
-      desc: "チェック・送信が済んだ製品",
+      desc: "チェック・送信が済んだ製品（フェーズ4）",
+      href: null,
       badge: finishedCount,
       quiet: true,
     },
@@ -61,22 +66,32 @@ export default async function MenuPage() {
       <div className="wrap">
         <div className="eyebrow">ログイン中: {user.userName}</div>
 
-        {menuItems.map((m) => (
-          <div className="menu" key={m.no}>
-            <div className="mno">{m.no}</div>
-            <div className="mtxt">
-              <b>{m.title}</b>
-              <span>{m.desc}</span>
+        {menuItems.map((m) => {
+          const content = (
+            <>
+              <div className="mno">{m.no}</div>
+              <div className="mtxt">
+                <b>{m.title}</b>
+                <span>{m.desc}</span>
+              </div>
+              {m.badge !== undefined && (
+                <div className={`mbadge${m.quiet ? " quiet" : ""}`}>{m.badge}</div>
+              )}
+            </>
+          );
+          return m.href ? (
+            <Link className="menu" href={m.href} key={m.no}>
+              {content}
+            </Link>
+          ) : (
+            <div className="menu" style={{ opacity: 0.55 }} key={m.no}>
+              {content}
             </div>
-            {m.badge !== undefined && (
-              <div className={`mbadge${m.quiet ? " quiet" : ""}`}>{m.badge}</div>
-            )}
-          </div>
-        ))}
+          );
+        })}
 
         <div className="note">
-          フェーズ1では、データベースへの接続とログインまでを確認しています。
-          現場・製品の登録や一覧表示はフェーズ2で実装します。
+          作業終了リスト・工程の進捗管理・完成チェックは次のフェーズで追加します。
         </div>
 
         <form action={logout}>
