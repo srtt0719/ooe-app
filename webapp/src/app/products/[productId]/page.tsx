@@ -7,7 +7,7 @@ import { ProgressMeter } from "@/components/ProgressMeter";
 import { ProcessRow } from "@/components/ProcessRow";
 import { buildAlertInfo } from "@/lib/processAlert";
 import { getTemplatesWithProcesses } from "@/lib/processTemplates";
-import { applyTemplateToProduct } from "../processActions";
+import { applyTemplateToProduct, currentUserName } from "../processActions";
 
 export default async function ProductDetailPage({
   params,
@@ -40,6 +40,7 @@ export default async function ProductDetailPage({
 
   const templates = product.processes.length === 0 ? await getTemplatesWithProcesses() : [];
   const boundApplyTemplate = applyTemplateToProduct.bind(null, productId);
+  const defaultUserName = await currentUserName();
 
   return (
     <div>
@@ -156,6 +157,7 @@ export default async function ProductDetailPage({
                 key={process.processId}
                 process={process}
                 productId={productId}
+                defaultUserName={defaultUserName}
                 alertInfo={buildAlertInfo(
                   process.processName,
                   alertByName.get(process.processName) ?? null,

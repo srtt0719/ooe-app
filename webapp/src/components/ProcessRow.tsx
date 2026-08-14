@@ -19,35 +19,38 @@ export function ProcessRow({
   process,
   productId,
   alertInfo,
+  defaultUserName,
 }: {
   process: ProcessData;
   productId: number;
   alertInfo: AlertInfo | null;
+  defaultUserName: string;
 }) {
   const [pending, startTransition] = useTransition();
-  const [showAlert, setShowAlert] = useState(false);
+  const [dialog, setDialog] = useState<"start" | "complete" | null>(null);
+  const [name, setName] = useState(defaultUserName);
 
   const isStarted = Boolean(process.startedAt);
   const isDone = process.isCompleted;
 
-  function doStart() {
-    setShowAlert(false);
+  function openDialog(kind: "start" | "complete") {
+    setName(defaultUserName);
+    setDialog(kind);
+  }
+
+  function confirmStart() {
+    const performedBy = name;
+    setDialog(null);
     startTransition(() => {
-      startProcess(process.processId, productId);
+      startProcess(process.processId, productId, performedBy);
     });
   }
 
-  function handleStartClick() {
-    if (alertInfo) {
-      setShowAlert(true);
-    } else {
-      doStart();
-    }
-  }
-
-  function doComplete() {
+  function confirmComplete() {
+    const performedBy = name;
+    setDialog(null);
     startTransition(() => {
-      completeProcess(process.processId, productId);
+      completeProcess(process.processId, productId, performedBy);
     });
   }
 
@@ -71,24 +74,24 @@ export function ProcessRow({
           )}
         </div>
         {!isDone && !isStarted && (
-          <button className="btn ghost" type="button" disabled={pending} onClick={handleStartClick}>
+          <button className="btn ghost" type="button" disabled={pending} onClick={() => openDialog("start")}>
             着手
           </button>
         )}
         {!isDone && isStarted && (
-          <button className="btn done" type="button" disabled={pending} onClick={doComplete}>
+          <button className="btn done" type="button" disabled={pending} onClick={() => openDialog("complete")}>
             完了
           </button>
         )}
       </div>
 
-      {showAlert && alertInfo && (
+      {dialog === "start" && (
         <div className="veil">
           <div className="modal">
             <div className="mh">
-              <h3>{alertInfo.message ?? `${process.processName}を開始しますか`}</h3>
+              <h3>{alertInfo?.message ?? `${process.processName}に着手します`}</h3>
             </div>
-            {alertInfo.fields.length > 0 && (
+            {alertInfo && alertInfo.fields.length > 0 && (
               <div className="data">
                 <dl>
                   {alertInfo.fields.map((f) => (
@@ -100,12 +103,50 @@ export function ProcessRow({
                 </dl>
               </div>
             )}
+            <div className="fld" style={{ padding: "0 20px", marginTop: 14 }}>
+              <label htmlFor={`start-name-${process.processId}`}>着手者</label>
+              <input
+                className="inp"
+                id={`start-name-${process.processId}`}
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="名前を入力"
+              />
+            </div>
             <div className="mf">
-              <button className="btn ghost" type="button" onClick={() => setShowAlert(false)}>
+              <button className="btn ghost" type="button" onClick={() => setDialog(null)}>
                 戻る
               </button>
-              <button className="btn" type="button" onClick={doStart}>
-                確認して着手
+              <button className="btn" type="button" onClick={confirmStart} disabled={!name.trim()}>
+                この内容で着手
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {dialog === "complete" && (
+        <div className="veil">
+          <div className="modal">
+            <div className="mh">
+              <h3>{process.processName}を完了しますか</h3>
+            </div>
+            <div className="fld" style={{ padding: "0 20px", marginTop: 4 }}>
+              <label htmlFor={`complete-name-${process.processId}`}>完了者</label>
+              <input
+                className="inp"
+                id={`complete-name-${process.processId}`}
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="名前を入力"
+              />
+            </div>
+            <div className="mf">
+              <button className="btn ghost" type="button" onClick={() => setDialog(null)}>
+                戻る
+              </button>
+              <button className="btn done" type="button" onClick={confirmComplete} disabled={!name.trim()}>
+                完了にする
               </button>
             </div>
           </div>

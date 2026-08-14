@@ -5,15 +5,18 @@ import { prisma } from "@/lib/prisma";
 import { getSessionUserId } from "@/lib/session";
 import { copyTemplateProcesses } from "@/lib/processTemplates";
 
-async function currentUserName(): Promise<string> {
+// ログイン中の利用者は「入力の記録者」であって、実際に着手・完了した人とは
+// 限らない(共有端末で代理入力するケースがあるため)。そのため着手者・完了者は
+// 都度自由入力してもらい、ログイン名は初期値の候補として渡すだけにする。
+export async function currentUserName(): Promise<string> {
   const userId = await getSessionUserId();
-  if (!userId) return "不明";
+  if (!userId) return "";
   const user = await prisma.user.findUnique({ where: { userId } });
-  return user?.userName ?? "不明";
+  return user?.userName ?? "";
 }
 
-export async function startProcess(processId: number, productId: number) {
-  const name = await currentUserName();
+export async function startProcess(processId: number, productId: number, performedBy: string) {
+  const name = performedBy.trim() || "不明";
   const process = await prisma.process.findUnique({ where: { processId } });
   if (process && !process.startedAt) {
     await prisma.process.update({
@@ -27,8 +30,8 @@ export async function startProcess(processId: number, productId: number) {
   revalidatePath("/products");
 }
 
-export async function completeProcess(processId: number, productId: number) {
-  const name = await currentUserName();
+export async function completeProcess(processId: number, productId: number, performedBy: string) {
+  const name = performedBy.trim() || "不明";
   const process = await prisma.process.findUnique({ where: { processId } });
   if (!process) return;
   await prisma.process.update({
