@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { ProductForm } from "../ProductForm";
 import { createProduct } from "../actions";
 import { AppHeader } from "@/components/AppHeader";
+import { getTemplatesWithProcesses } from "@/lib/processTemplates";
 
 export default async function NewProductPage({
   searchParams,
@@ -27,6 +28,7 @@ export default async function NewProductPage({
       });
 
   const backHref = site ? `/sites/${site.siteId}` : "/register";
+  const templates = await getTemplatesWithProcesses();
 
   return (
     <div>
@@ -40,6 +42,7 @@ export default async function NewProductPage({
           action={createProduct}
           siteContext={site ?? undefined}
           sitesForPicker={sitesForPicker}
+          templates={templates}
           submitLabel="製品を登録"
         />
       </div>

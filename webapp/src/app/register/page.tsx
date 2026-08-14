@@ -1,13 +1,17 @@
 import { prisma } from "@/lib/prisma";
 import { RegisterForm } from "./RegisterForm";
 import { AppHeader } from "@/components/AppHeader";
+import { getTemplatesWithProcesses } from "@/lib/processTemplates";
 
 export default async function RegisterPage() {
-  const users = await prisma.user.findMany({
-    where: { isActive: true },
-    orderBy: { userName: "asc" },
-    select: { userId: true, userName: true },
-  });
+  const [users, templates] = await Promise.all([
+    prisma.user.findMany({
+      where: { isActive: true },
+      orderBy: { userName: "asc" },
+      select: { userId: true, userName: true },
+    }),
+    getTemplatesWithProcesses(),
+  ]);
 
   return (
     <div>
@@ -17,7 +21,7 @@ export default async function RegisterPage() {
           図面から読み取って登録する機能はフェーズ5で追加します。現在は手入力のみです。
           既存の現場に製品を追加したい場合は、現場ページの「＋ 製品を登録」から行えます。
         </div>
-        <RegisterForm users={users} />
+        <RegisterForm users={users} templates={templates} />
       </div>
     </div>
   );

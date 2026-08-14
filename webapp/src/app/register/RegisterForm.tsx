@@ -5,13 +5,22 @@ import { MATERIAL_OPTIONS, FINISH_OPTIONS, MATERIAL_STATUS, SURFACE_TYPE } from 
 import { RadioSeg3 } from "@/components/RadioSeg3";
 import { createSiteAndProduct, type FormState } from "./actions";
 
+type TemplateWithProcesses = {
+  templateName: string;
+  processes: { processName: string; weight: number }[];
+};
+
 export function RegisterForm({
   users,
+  templates,
 }: {
   users: { userId: number; userName: string }[];
+  templates: TemplateWithProcesses[];
 }) {
   const [state, formAction, pending] = useActionState(createSiteAndProduct, { error: "" } as FormState);
   const [surfaceType, setSurfaceType] = useState("自社");
+  const [templateName, setTemplateName] = useState(templates[0]?.templateName ?? "");
+  const selectedTemplate = templates.find((t) => t.templateName === templateName);
 
   return (
     <form action={formAction}>
@@ -157,6 +166,38 @@ export function RegisterForm({
             </div>
           </>
         )}
+      </div>
+
+      <div className="eyebrow">工程</div>
+      <div className="card">
+        <div className="fld">
+          <label htmlFor="templateName">テンプレート</label>
+          <select
+            className="inp"
+            id="templateName"
+            name="templateName"
+            value={templateName}
+            onChange={(e) => setTemplateName(e.target.value)}
+          >
+            {templates.map((t) => (
+              <option key={t.templateName} value={t.templateName}>
+                {t.templateName}（{t.processes.length}工程）
+              </option>
+            ))}
+          </select>
+        </div>
+        {selectedTemplate && selectedTemplate.processes.length > 0 && (
+          <div className="tpl">
+            {selectedTemplate.processes.map((p) => (
+              <span key={p.processName}>
+                {p.processName} {p.weight}
+              </span>
+            ))}
+          </div>
+        )}
+        <div className="note" style={{ margin: "10px 0 0" }}>
+          登録後、この製品だけ工程を足したり重みを変えたりできます（今後のフェーズで対応）。
+        </div>
       </div>
 
       {state.error && <p className="errtext">{state.error}</p>}

@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { fmtDate, isNear } from "@/lib/format";
 import { DAYS_BEFORE_NEAR } from "@/lib/constants";
 import { AppHeader } from "@/components/AppHeader";
+import { ProgressMeter } from "@/components/ProgressMeter";
 
 const FILTERS = [
   { key: "all", label: "すべて" },
@@ -50,7 +51,7 @@ export default async function ProductListPage({
   const products = await prisma.product.findMany({
     where: { isDeleted: false, ...buildFilterWhere(filter) },
     orderBy: { processDueDate: { sort: "asc", nulls: "last" } },
-    include: { site: true },
+    include: { site: true, processes: { orderBy: { sortOrder: "asc" } } },
   });
 
   return (
@@ -114,6 +115,7 @@ export default async function ProductListPage({
               )}
               <span className="chip">{product.status}</span>
             </div>
+            <ProgressMeter processes={product.processes} compact />
           </Link>
         ))}
       </div>

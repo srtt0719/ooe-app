@@ -48,10 +48,16 @@ const empty: ProductInitial = {
   note: "",
 };
 
+type TemplateWithProcesses = {
+  templateName: string;
+  processes: { processName: string; weight: number }[];
+};
+
 export function ProductForm({
   action,
   siteContext,
   sitesForPicker,
+  templates,
   initial,
   submitLabel,
   showStatusAndActualReturn,
@@ -59,6 +65,7 @@ export function ProductForm({
   action: (state: FormState, formData: FormData) => Promise<FormState>;
   siteContext?: { siteId: number; siteName: string; orderNumber: string | null };
   sitesForPicker?: { siteId: number; siteName: string }[];
+  templates?: TemplateWithProcesses[];
   initial?: Partial<ProductInitial>;
   submitLabel: string;
   showStatusAndActualReturn?: boolean;
@@ -66,6 +73,8 @@ export function ProductForm({
   const v = { ...empty, ...initial };
   const [state, formAction, pending] = useActionState(action, { error: "" });
   const [surfaceType, setSurfaceType] = useState(v.surfaceType);
+  const [templateName, setTemplateName] = useState(templates?.[0]?.templateName ?? "");
+  const selectedTemplate = templates?.find((t) => t.templateName === templateName);
 
   return (
     <form action={formAction}>
@@ -305,6 +314,39 @@ export function ProductForm({
               options={["未着手", "製作中", "完了", "出荷済"]}
               defaultValue={v.status}
             />
+          </div>
+        </>
+      )}
+
+      {!showStatusAndActualReturn && templates && templates.length > 0 && (
+        <>
+          <div className="eyebrow">工程</div>
+          <div className="card">
+            <div className="fld">
+              <label htmlFor="templateName">テンプレート</label>
+              <select
+                className="inp"
+                id="templateName"
+                name="templateName"
+                value={templateName}
+                onChange={(e) => setTemplateName(e.target.value)}
+              >
+                {templates.map((t) => (
+                  <option key={t.templateName} value={t.templateName}>
+                    {t.templateName}（{t.processes.length}工程）
+                  </option>
+                ))}
+              </select>
+            </div>
+            {selectedTemplate && selectedTemplate.processes.length > 0 && (
+              <div className="tpl">
+                {selectedTemplate.processes.map((p) => (
+                  <span key={p.processName}>
+                    {p.processName} {p.weight}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
         </>
       )}

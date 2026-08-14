@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { fmtDate, isNear } from "@/lib/format";
 import { DAYS_BEFORE_NEAR } from "@/lib/constants";
 import { AppHeader } from "@/components/AppHeader";
+import { ProgressMeter } from "@/components/ProgressMeter";
 
 export default async function SiteDetailPage({
   params,
@@ -20,6 +21,7 @@ export default async function SiteDetailPage({
       products: {
         where: { isDeleted: false },
         orderBy: { productName: "asc" },
+        include: { processes: { orderBy: { sortOrder: "asc" } } },
       },
     },
   });
@@ -101,6 +103,7 @@ export default async function SiteDetailPage({
                 <span className="chip alert">材料 未発注</span>
               </div>
             )}
+            <ProgressMeter processes={product.processes} compact />
           </Link>
         ))}
       </div>

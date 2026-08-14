@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { parseInputDate } from "@/lib/format";
+import { copyTemplateProcesses } from "@/lib/processTemplates";
 
 export type FormState = { error: string };
 
@@ -48,6 +49,12 @@ export async function createProduct(
   }
 
   const product = await prisma.product.create({ data: { ...fields, siteId } });
+
+  const templateName = String(formData.get("templateName") ?? "").trim();
+  if (templateName) {
+    await copyTemplateProcesses(templateName, product.productId);
+  }
+
   redirect(`/products/${product.productId}`);
 }
 

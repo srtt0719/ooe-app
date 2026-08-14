@@ -449,6 +449,21 @@ body {
   gap: 11px;
 }
 
+.tpl {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 10px;
+}
+.tpl span {
+  font-size: 11.5px;
+  padding: 3px 8px;
+  border-radius: 2px;
+  background: #f2f3f1;
+  color: var(--steel);
+  font-family: "SF Mono", Menlo, monospace;
+}
+
 select.inp {
   appearance: none;
   background-image: linear-gradient(45deg, transparent 50%, var(--steel) 50%),
@@ -529,6 +544,145 @@ select.inp {
   flex: 1;
   text-align: center;
   padding: 13px;
+}
+.modal .data {
+  background: var(--ink);
+  color: #fff;
+  margin: 14px 20px;
+  border-radius: 3px;
+  padding: 13px 15px;
+}
+.modal .data dl {
+  display: grid;
+  grid-template-columns: 56px 1fr;
+  gap: 7px 10px;
+  font-size: 14px;
+  margin: 0;
+}
+.modal .data dt {
+  color: #8b98a5;
+  font-size: 12px;
+}
+.modal .data dd {
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  margin: 0;
+}
+
+/* 進捗メーター */
+.meter {
+  display: flex;
+  gap: 1.5px;
+  margin-top: 10px;
+  height: 22px;
+}
+.seg {
+  position: relative;
+  background: #e7e8e4;
+  border-radius: 1px;
+  overflow: hidden;
+}
+.seg.done {
+  background: var(--patina);
+}
+.seg.now {
+  background: repeating-linear-gradient(
+    -45deg,
+    var(--marking),
+    var(--marking) 4px,
+    #d9a63a 4px,
+    #d9a63a 8px
+  );
+}
+.seg span {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9.5px;
+  color: #9aa2a9;
+  letter-spacing: -0.02em;
+}
+.seg.done span {
+  color: rgba(255, 255, 255, 0.9);
+}
+.seg.now span {
+  color: #3d2e00;
+  font-weight: 700;
+}
+.mrow {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 6px;
+  align-items: baseline;
+}
+.pct {
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.pct small {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--steel);
+  margin-left: 2px;
+}
+.now-label {
+  font-size: 12px;
+  color: var(--marking);
+  font-weight: 600;
+}
+
+/* 工程行 */
+.proc {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--hair);
+}
+.proc:last-child {
+  border-bottom: 0;
+}
+.mark {
+  width: 19px;
+  height: 19px;
+  border-radius: 50%;
+  flex: 0 0 auto;
+  border: 1.5px solid var(--hair);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  color: #fff;
+}
+.mark.done {
+  background: var(--patina);
+  border-color: var(--patina);
+}
+.mark.now {
+  border-color: var(--marking);
+  border-width: 3px;
+}
+.pname {
+  flex: 1;
+  font-size: 14.5px;
+}
+.pname.done {
+  color: var(--steel);
+}
+.pmeta {
+  font-size: 11px;
+  color: var(--steel);
+  margin-top: 1px;
+}
+.pmeta.now {
+  color: var(--marking);
+}
+.btn.done {
+  background: var(--patina);
+  border-color: var(--patina);
 }
 
 .spec {

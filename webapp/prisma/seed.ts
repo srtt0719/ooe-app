@@ -8,23 +8,41 @@ const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
 const prisma = new PrismaClient({ adapter });
 
 async function main() {
-  const templateCount = await prisma.processTemplate.count();
-  if (templateCount === 0) {
-    await prisma.processTemplate.createMany({
-      data: [
-        { templateName: "標準", processName: "切断", weight: 15, sortOrder: 1 },
-        { templateName: "標準", processName: "カエリ取り", weight: 8, sortOrder: 2 },
-        { templateName: "標準", processName: "穴あけ", weight: 15, sortOrder: 3 },
-        { templateName: "標準", processName: "組立", weight: 18, sortOrder: 4 },
-        { templateName: "標準", processName: "溶接", weight: 22, sortOrder: 5 },
-        { templateName: "標準", processName: "仕上げ", weight: 12, sortOrder: 6 },
-        { templateName: "標準", processName: "塗装・研磨", weight: 10, sortOrder: 7 },
-      ],
+  // createMany ではなく1行ずつ upsert 的に処理し、後から alert_message 等を
+  // 追加しても既存データに反映できるようにする(仕様書5-4の注意喚起文)。
+  const templates: {
+    templateName: string;
+    processName: string;
+    weight: number;
+    sortOrder: number;
+    alertMessage: string | null;
+  }[] = [
+    { templateName: "標準", processName: "切断", weight: 15, sortOrder: 1, alertMessage: "材料・板厚は図面通りですか" },
+    { templateName: "標準", processName: "カエリ取り", weight: 8, sortOrder: 2, alertMessage: null },
+    { templateName: "標準", processName: "穴あけ", weight: 15, sortOrder: 3, alertMessage: "図面を確認しましたか" },
+    { templateName: "標準", processName: "組立", weight: 18, sortOrder: 4, alertMessage: null },
+    { templateName: "標準", processName: "溶接", weight: 22, sortOrder: 5, alertMessage: null },
+    { templateName: "標準", processName: "仕上げ", weight: 12, sortOrder: 6, alertMessage: null },
+    { templateName: "標準", processName: "塗装・研磨", weight: 10, sortOrder: 7, alertMessage: "仕上げ指示を確認しましたか" },
+  ];
+  for (const t of templates) {
+    const existing = await prisma.processTemplate.findFirst({
+      where: { templateName: t.templateName, processName: t.processName },
     });
-    console.log("process_templates: 初期データを投入しました");
-  } else {
-    console.log("process_templates: 既にデータがあるためスキップ");
+    if (existing) {
+      await prisma.processTemplate.update({
+        where: { templateId: existing.templateId },
+        data: {
+          weight: t.weight,
+          sortOrder: t.sortOrder,
+          alertMessage: t.alertMessage,
+        },
+      });
+    } else {
+      await prisma.processTemplate.create({ data: t });
+    }
   }
+  console.log("process_templates: 初期データを確認しました");
 
   const checkItemCount = await prisma.checkItem.count();
   if (checkItemCount === 0) {
