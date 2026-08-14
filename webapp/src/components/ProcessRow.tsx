@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { fmtDateTime } from "@/lib/format";
-import { startProcess, completeProcess } from "@/app/products/processActions";
+import { startProcess, completeProcess, uncompleteProcess } from "@/app/products/processActions";
 import type { AlertInfo } from "@/lib/processAlert";
 
 type ProcessData = {
@@ -27,7 +27,7 @@ export function ProcessRow({
   defaultUserName: string;
 }) {
   const [pending, startTransition] = useTransition();
-  const [dialog, setDialog] = useState<"start" | "complete" | null>(null);
+  const [dialog, setDialog] = useState<"start" | "complete" | "uncomplete" | null>(null);
   const [name, setName] = useState(defaultUserName);
 
   const isStarted = Boolean(process.startedAt);
@@ -51,6 +51,13 @@ export function ProcessRow({
     setDialog(null);
     startTransition(() => {
       completeProcess(process.processId, productId, performedBy);
+    });
+  }
+
+  function confirmUncomplete() {
+    setDialog(null);
+    startTransition(() => {
+      uncompleteProcess(process.processId, productId);
     });
   }
 
@@ -81,6 +88,17 @@ export function ProcessRow({
         {!isDone && isStarted && (
           <button className="btn done" type="button" disabled={pending} onClick={() => openDialog("complete")}>
             完了
+          </button>
+        )}
+        {isDone && (
+          <button
+            className="btn ghost"
+            type="button"
+            disabled={pending}
+            onClick={() => setDialog("uncomplete")}
+            style={{ fontSize: 11.5, padding: "6px 10px", color: "var(--steel)" }}
+          >
+            取り消す
           </button>
         )}
       </div>
@@ -147,6 +165,27 @@ export function ProcessRow({
               </button>
               <button className="btn done" type="button" onClick={confirmComplete} disabled={!name.trim()}>
                 完了にする
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {dialog === "uncomplete" && (
+        <div className="veil">
+          <div className="modal">
+            <div className="mh">
+              <h3>{process.processName}の完了を取り消しますか</h3>
+              <p style={{ fontSize: 13.5, color: "var(--steel)", marginTop: 9, lineHeight: 1.6 }}>
+                着手中の状態に戻ります。完了者の記録は消えます。
+              </p>
+            </div>
+            <div className="mf">
+              <button className="btn ghost" type="button" onClick={() => setDialog(null)}>
+                やめる
+              </button>
+              <button className="btn" type="button" onClick={confirmUncomplete}>
+                取り消す
               </button>
             </div>
           </div>

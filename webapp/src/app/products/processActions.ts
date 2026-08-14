@@ -15,6 +15,13 @@ export async function currentUserName(): Promise<string> {
   return user?.userName ?? "";
 }
 
+async function revalidateProductViews(productId: number) {
+  revalidatePath(`/products/${productId}`);
+  const product = await prisma.product.findUnique({ where: { productId } });
+  if (product) revalidatePath(`/sites/${product.siteId}`);
+  revalidatePath("/products");
+}
+
 export async function startProcess(processId: number, productId: number, performedBy: string) {
   const name = performedBy.trim() || "不明";
   const process = await prisma.process.findUnique({ where: { processId } });
@@ -24,10 +31,7 @@ export async function startProcess(processId: number, productId: number, perform
       data: { startedAt: new Date(), startedBy: name },
     });
   }
-  revalidatePath(`/products/${productId}`);
-  const product = await prisma.product.findUnique({ where: { productId } });
-  if (product) revalidatePath(`/sites/${product.siteId}`);
-  revalidatePath("/products");
+  await revalidateProductViews(productId);
 }
 
 export async function completeProcess(processId: number, productId: number, performedBy: string) {
@@ -44,10 +48,17 @@ export async function completeProcess(processId: number, productId: number, perf
       startedBy: process.startedBy ?? name,
     },
   });
-  revalidatePath(`/products/${productId}`);
-  const product = await prisma.product.findUnique({ where: { productId } });
-  if (product) revalidatePath(`/sites/${product.siteId}`);
-  revalidatePath("/products");
+  await revalidateProductViews(productId);
+}
+
+// 完了操作の取り消し。着手記録(started_at/started_by)は誤操作ではないので残し、
+// 完了状態だけ元に戻す(=着手中の状態に戻る)。
+export async function uncompleteProcess(processId: number, productId: number) {
+  await prisma.process.update({
+    where: { processId },
+    data: { isCompleted: false, completedAt: null, completedBy: null },
+  });
+  await revalidateProductViews(productId);
 }
 
 export async function applyTemplateToProduct(productId: number, formData: FormData) {
