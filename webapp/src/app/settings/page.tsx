@@ -53,6 +53,13 @@ export default async function SettingsPage() {
           </div>
           {missingIdCount > 0 && <div className="mbadge">{missingIdCount}</div>}
         </Link>
+        <Link className="menu" href="/settings/trash">
+          <div className="mno">🗑</div>
+          <div className="mtxt">
+            <b>削除済み</b>
+            <span>誤って削除した現場・製品を元に戻す</span>
+          </div>
+        </Link>
 
         <div className="eyebrow">LINE WORKS 通知先</div>
         <div className="note" style={{ marginTop: 0 }}>
