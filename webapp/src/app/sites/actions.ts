@@ -39,9 +39,16 @@ export async function updateSite(
 }
 
 export async function deleteSite(siteId: number) {
-  await prisma.site.update({
-    where: { siteId },
-    data: { isDeleted: true },
-  });
+  // 現場を削除すると、確認画面で示した通りその現場の製品も一覧から見えなくする。
+  await prisma.$transaction([
+    prisma.product.updateMany({
+      where: { siteId },
+      data: { isDeleted: true },
+    }),
+    prisma.site.update({
+      where: { siteId },
+      data: { isDeleted: true },
+    }),
+  ]);
   redirect("/sites");
 }
