@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { parseInputDate } from "@/lib/format";
 import { copyTemplateProcesses } from "@/lib/processTemplates";
+import { recomputeSiteStatus } from "@/lib/siteStatus";
 
 export type FormState = { error: string };
 
@@ -55,6 +56,9 @@ export async function createProduct(
     await copyTemplateProcesses(templateName, product.productId);
   }
 
+  // 完了扱いだった現場に新しい製品を追加した場合は、作業再開として進行中に戻す
+  await recomputeSiteStatus(siteId);
+
   redirect(`/products/${product.productId}`);
 }
 
@@ -70,10 +74,11 @@ export async function updateProduct(
   const status = String(formData.get("status") ?? "未着手");
   const vendorReturnActual = parseInputDate(formData.get("vendorReturnActual"));
 
-  await prisma.product.update({
+  const product = await prisma.product.update({
     where: { productId },
     data: { ...fields, status, vendorReturnActual },
   });
+  await recomputeSiteStatus(product.siteId);
   redirect(`/products/${productId}`);
 }
 
@@ -82,5 +87,6 @@ export async function deleteProduct(productId: number) {
     where: { productId },
     data: { isDeleted: true },
   });
+  await recomputeSiteStatus(product.siteId);
   redirect(`/sites/${product.siteId}`);
 }

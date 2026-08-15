@@ -65,7 +65,7 @@ export default async function SiteDetailPage({
                 現場搬入 {fmtDate(site.deliveryDueDate)}
               </span>
             )}
-            <span className="chip">{site.status}</span>
+            <span className={`chip${site.status === "完了" ? " ok" : ""}`}>{site.status}</span>
             {site.manager && <span className="chip">担当 {site.manager.userName}</span>}
           </div>
           {site.siteAddress && <div className="sub" style={{ marginTop: 9 }}>{site.siteAddress}</div>}
@@ -82,7 +82,9 @@ export default async function SiteDetailPage({
 
         {site.products.length === 0 && (
           <p className="sub" style={{ marginTop: 4 }}>
-            まだ製品が登録されていません。
+            {site.status === "完了"
+              ? "全ての製品が完成チェック済みです。作業終了リストをご覧ください。"
+              : "まだ製品が登録されていません。"}
           </p>
         )}
 

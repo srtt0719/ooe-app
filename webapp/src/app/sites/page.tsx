@@ -81,6 +81,11 @@ export default async function SiteListPage({
                 <div className="due">製品 {site.products.length}</div>
               </div>
               <div className="chips">
+                {site.status === "完了" ? (
+                  <span className="chip ok">完了</span>
+                ) : site.status === "保留" ? (
+                  <span className="chip">保留</span>
+                ) : null}
                 {site.deliveryDueDate && (
                   <span
                     className={`chip${isNear(site.deliveryDueDate, DAYS_BEFORE_NEAR) ? " alert" : ""}`}

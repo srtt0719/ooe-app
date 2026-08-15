@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
+import { recomputeSiteStatus } from "@/lib/siteStatus";
 
 export async function submitCheck(productId: number, formData: FormData) {
   const checkerName = String(formData.get("checkerName") ?? "").trim() || "不明";
@@ -25,6 +26,8 @@ export async function submitCheck(productId: number, formData: FormData) {
       }),
     ),
   ]);
+
+  await recomputeSiteStatus(product.siteId);
 
   revalidatePath(`/products/${productId}`);
   revalidatePath(`/sites/${product.siteId}`);
