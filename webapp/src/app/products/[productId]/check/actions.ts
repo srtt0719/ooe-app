@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 
 export async function submitCheck(productId: number, formData: FormData) {
@@ -10,7 +11,8 @@ export async function submitCheck(productId: number, formData: FormData) {
   // 同じチェック回であることが後から分かるよう、全行に同じ日時を持たせる。
   const checkedAt = new Date();
 
-  await prisma.$transaction([
+  const [product] = await prisma.$transaction([
+    prisma.product.update({ where: { productId }, data: { status: "完了" } }),
     ...items.map((item) =>
       prisma.checkRecord.create({
         data: {
@@ -22,8 +24,14 @@ export async function submitCheck(productId: number, formData: FormData) {
         },
       }),
     ),
-    prisma.product.update({ where: { productId }, data: { status: "完了" } }),
   ]);
+
+  revalidatePath(`/products/${productId}`);
+  revalidatePath(`/sites/${product.siteId}`);
+  revalidatePath("/products");
+  revalidatePath("/sites");
+  revalidatePath("/finished");
+  revalidatePath("/");
 
   redirect(`/products/${productId}`);
 }
