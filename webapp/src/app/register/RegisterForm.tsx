@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { MATERIAL_OPTIONS, FINISH_OPTIONS, MATERIAL_STATUS, SURFACE_TYPE } from "@/lib/constants";
+import { MATERIAL_STATUS, SURFACE_TYPE } from "@/lib/constants";
 import { RadioSeg3 } from "@/components/RadioSeg3";
 import { createSiteAndProduct, type FormState } from "./actions";
 
@@ -13,9 +13,15 @@ type TemplateWithProcesses = {
 export function RegisterForm({
   users,
   templates,
+  materialOptions,
+  finishOptions,
+  vendorNames,
 }: {
   users: { userId: number; userName: string }[];
   templates: TemplateWithProcesses[];
+  materialOptions: string[];
+  finishOptions: string[];
+  vendorNames: string[];
 }) {
   const [state, formAction, pending] = useActionState(createSiteAndProduct, { error: "" } as FormState);
   const [surfaceType, setSurfaceType] = useState("自社");
@@ -80,8 +86,8 @@ export function RegisterForm({
         <div className="fld2">
           <div className="fld">
             <label htmlFor="material">素材</label>
-            <select className="inp" id="material" name="material" defaultValue={MATERIAL_OPTIONS[0]}>
-              {MATERIAL_OPTIONS.map((m) => (
+            <select className="inp" id="material" name="material" defaultValue={materialOptions[0]}>
+              {materialOptions.map((m) => (
                 <option key={m} value={m}>
                   {m}
                 </option>
@@ -95,8 +101,8 @@ export function RegisterForm({
         </div>
         <div className="fld">
           <label htmlFor="finish">仕上げ</label>
-          <select className="inp" id="finish" name="finish" defaultValue={FINISH_OPTIONS[0]}>
-            {FINISH_OPTIONS.map((f) => (
+          <select className="inp" id="finish" name="finish" defaultValue={finishOptions[0]}>
+            {finishOptions.map((f) => (
               <option key={f} value={f}>
                 {f}
               </option>
@@ -152,7 +158,18 @@ export function RegisterForm({
           <>
             <div className="fld">
               <label htmlFor="vendorName">外注先</label>
-              <input className="inp" id="vendorName" name="vendorName" placeholder="○○メッキ工業" />
+              <input
+                className="inp"
+                id="vendorName"
+                name="vendorName"
+                list="vendor-name-options"
+                placeholder="○○メッキ工業"
+              />
+              <datalist id="vendor-name-options">
+                {vendorNames.map((name) => (
+                  <option key={name} value={name} />
+                ))}
+              </datalist>
             </div>
             <div className="fld2">
               <div className="fld">

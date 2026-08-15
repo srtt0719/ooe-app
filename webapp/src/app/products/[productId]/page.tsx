@@ -8,6 +8,7 @@ import { ProcessRow } from "@/components/ProcessRow";
 import { buildAlertInfo } from "@/lib/processAlert";
 import { getTemplatesWithProcesses } from "@/lib/processTemplates";
 import { applyTemplateToProduct, currentUserName } from "../processActions";
+import { MaterialDetailSection } from "@/components/MaterialDetailSection";
 
 export default async function ProductDetailPage({
   params,
@@ -22,6 +23,7 @@ export default async function ProductDetailPage({
     include: {
       site: true,
       processes: { orderBy: { sortOrder: "asc" } },
+      materialDetails: { orderBy: { detailId: "asc" } },
     },
   });
 
@@ -173,11 +175,21 @@ export default async function ProductDetailPage({
           </div>
         )}
 
-        <button className="btn wide" disabled>
-          {allCompleted
-            ? "完成チェックへ（フェーズ4で追加）"
-            : "完成チェックへ（全工程完了後）"}
-        </button>
+        <MaterialDetailSection productId={productId} details={product.materialDetails} />
+
+        {product.status === "完了" || product.status === "出荷済" ? (
+          <div className="chips" style={{ justifyContent: "center", marginTop: 16 }}>
+            <span className="chip ok">完成チェック済み（{product.status}）</span>
+          </div>
+        ) : allCompleted ? (
+          <Link className="btn wide" href={`/products/${productId}/check`} style={{ textAlign: "center" }}>
+            完成チェックへ
+          </Link>
+        ) : (
+          <button className="btn wide" disabled>
+            完成チェックへ（全工程完了後）
+          </button>
+        )}
 
         <div className="note">数値は入力しません。着手と完了のボタンだけで進捗が動きます。</div>
       </div>

@@ -68,6 +68,13 @@ async function main() {
     notify_daily_group: "",
     notify_daily_time: "08:30",
     notify_days_before: "3",
+    notify_daily_enable_process_due: "true",
+    notify_daily_enable_delivery: "true",
+    notify_daily_enable_vendor_overdue: "true",
+    notify_daily_enable_material_arrival: "true",
+    material_options: JSON.stringify(["SS400", "SUS304", "SPCC", "アルミ", "その他"]),
+    finish_options: JSON.stringify(["溶融亜鉛めっき", "焼付塗装", "生地", "研磨（ヘアライン）", "その他"]),
+    vendor_names: JSON.stringify([]),
   };
   for (const [key, value] of Object.entries(settingDefaults)) {
     await prisma.setting.upsert({

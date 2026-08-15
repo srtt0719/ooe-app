@@ -22,14 +22,24 @@ export function AppHeader({
         {title}
         {subtitle && <div className="hsub">{subtitle}</div>}
       </h1>
-      <Link
-        className="btn ghost"
-        href="/"
-        aria-label="メニューに戻る"
-        style={{ color: "#fff", padding: "0 2px", fontSize: 17 }}
-      >
-        ⌂
-      </Link>
+      <div style={{ display: "flex", gap: 4 }}>
+        <Link
+          className="btn ghost"
+          href="/settings"
+          aria-label="設定"
+          style={{ color: "#fff", padding: "0 2px", fontSize: 16 }}
+        >
+          ⚙
+        </Link>
+        <Link
+          className="btn ghost"
+          href="/"
+          aria-label="メニューに戻る"
+          style={{ color: "#fff", padding: "0 2px", fontSize: 17 }}
+        >
+          ⌂
+        </Link>
+      </div>
     </div>
   );
 }

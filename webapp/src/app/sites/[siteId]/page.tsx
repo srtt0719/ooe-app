@@ -19,7 +19,8 @@ export default async function SiteDetailPage({
     include: {
       manager: true,
       products: {
-        where: { isDeleted: false },
+        // チェック完了・出荷済の製品は作業終了リストへ移り、現場ページの通常一覧には出さない(仕様書4-7)
+        where: { isDeleted: false, status: { notIn: ["完了", "出荷済"] } },
         orderBy: { productName: "asc" },
         include: { processes: { orderBy: { sortOrder: "asc" } } },
       },

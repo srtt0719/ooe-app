@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { MATERIAL_OPTIONS, FINISH_OPTIONS, MATERIAL_STATUS, SURFACE_TYPE } from "@/lib/constants";
+import { MATERIAL_STATUS, SURFACE_TYPE } from "@/lib/constants";
 import { toInputDate } from "@/lib/format";
 import { RadioSeg3 } from "@/components/RadioSeg3";
 import type { FormState } from "./actions";
@@ -31,9 +31,9 @@ const empty: ProductInitial = {
   productName: "",
   orderNumber: "",
   quantity: "",
-  material: MATERIAL_OPTIONS[0],
+  material: "",
   thickness: "",
-  finish: FINISH_OPTIONS[0],
+  finish: "",
   drawingNumber: "",
   processDueDate: null,
   deliveryDate: null,
@@ -58,6 +58,9 @@ export function ProductForm({
   siteContext,
   sitesForPicker,
   templates,
+  materialOptions,
+  finishOptions,
+  vendorNames,
   initial,
   submitLabel,
   showStatusAndActualReturn,
@@ -66,6 +69,9 @@ export function ProductForm({
   siteContext?: { siteId: number; siteName: string; orderNumber: string | null };
   sitesForPicker?: { siteId: number; siteName: string }[];
   templates?: TemplateWithProcesses[];
+  materialOptions: string[];
+  finishOptions: string[];
+  vendorNames: string[];
   initial?: Partial<ProductInitial>;
   submitLabel: string;
   showStatusAndActualReturn?: boolean;
@@ -146,8 +152,8 @@ export function ProductForm({
         <div className="fld2">
           <div className="fld">
             <label htmlFor="material">素材</label>
-            <select className="inp" id="material" name="material" defaultValue={v.material}>
-              {MATERIAL_OPTIONS.map((m) => (
+            <select className="inp" id="material" name="material" defaultValue={v.material || materialOptions[0]}>
+              {materialOptions.map((m) => (
                 <option key={m} value={m}>
                   {m}
                 </option>
@@ -167,8 +173,8 @@ export function ProductForm({
         </div>
         <div className="fld">
           <label htmlFor="finish">仕上げ</label>
-          <select className="inp" id="finish" name="finish" defaultValue={v.finish}>
-            {FINISH_OPTIONS.map((f) => (
+          <select className="inp" id="finish" name="finish" defaultValue={v.finish || finishOptions[0]}>
+            {finishOptions.map((f) => (
               <option key={f} value={f}>
                 {f}
               </option>
@@ -254,9 +260,15 @@ export function ProductForm({
                 className="inp"
                 id="vendorName"
                 name="vendorName"
+                list="vendor-name-options"
                 defaultValue={v.vendorName}
                 placeholder="○○メッキ工業"
               />
+              <datalist id="vendor-name-options">
+                {vendorNames.map((name) => (
+                  <option key={name} value={name} />
+                ))}
+              </datalist>
             </div>
             <div className="fld2">
               <div className="fld">

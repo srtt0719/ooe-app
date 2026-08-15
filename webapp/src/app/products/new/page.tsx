@@ -3,6 +3,7 @@ import { ProductForm } from "../ProductForm";
 import { createProduct } from "../actions";
 import { AppHeader } from "@/components/AppHeader";
 import { getTemplatesWithProcesses } from "@/lib/processTemplates";
+import { getSettingJsonArray, SETTING_KEYS, DEFAULT_MATERIAL_OPTIONS, DEFAULT_FINISH_OPTIONS } from "@/lib/settings";
 
 export default async function NewProductPage({
   searchParams,
@@ -28,7 +29,12 @@ export default async function NewProductPage({
       });
 
   const backHref = site ? `/sites/${site.siteId}` : "/register";
-  const templates = await getTemplatesWithProcesses();
+  const [templates, materialOptions, finishOptions, vendorNames] = await Promise.all([
+    getTemplatesWithProcesses(),
+    getSettingJsonArray(SETTING_KEYS.materialOptions, DEFAULT_MATERIAL_OPTIONS),
+    getSettingJsonArray(SETTING_KEYS.finishOptions, DEFAULT_FINISH_OPTIONS),
+    getSettingJsonArray(SETTING_KEYS.vendorNames, []),
+  ]);
 
   return (
     <div>
@@ -43,6 +49,9 @@ export default async function NewProductPage({
           siteContext={site ?? undefined}
           sitesForPicker={sitesForPicker}
           templates={templates}
+          materialOptions={materialOptions}
+          finishOptions={finishOptions}
+          vendorNames={vendorNames}
           submitLabel="製品を登録"
         />
       </div>

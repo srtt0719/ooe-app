@@ -12,8 +12,10 @@ const FILTERS = [
   { key: "this-month", label: "今月納期" },
   { key: "material-unordered", label: "材料 未発注" },
   { key: "vendor-overdue", label: "外注 戻り遅れ" },
-  { key: "incomplete", label: "未完了" },
 ] as const;
+
+// チェック完了・出荷済の製品は通常の一覧から外れ、作業終了リストに移る(仕様書4-7)。
+const ACTIVE_STATUS_FILTER: Prisma.ProductWhereInput = { status: { notIn: ["完了", "出荷済"] } };
 
 function buildFilterWhere(filter: string): Prisma.ProductWhereInput {
   const today = new Date();
@@ -33,8 +35,6 @@ function buildFilterWhere(filter: string): Prisma.ProductWhereInput {
       return { materialStatus: "未発注" };
     case "vendor-overdue":
       return { vendorSendDate: { not: null }, vendorReturnActual: null };
-    case "incomplete":
-      return { status: { notIn: ["完了", "出荷済"] } };
     default:
       return {};
   }
@@ -49,7 +49,7 @@ export default async function ProductListPage({
   const filter = FILTERS.some((f) => f.key === filterRaw) ? filterRaw! : "all";
 
   const products = await prisma.product.findMany({
-    where: { isDeleted: false, ...buildFilterWhere(filter) },
+    where: { isDeleted: false, ...ACTIVE_STATUS_FILTER, ...buildFilterWhere(filter) },
     orderBy: { processDueDate: { sort: "asc", nulls: "last" } },
     include: { site: true, processes: { orderBy: { sortOrder: "asc" } } },
   });

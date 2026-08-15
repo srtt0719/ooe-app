@@ -17,7 +17,9 @@ export default async function MenuPage() {
 
   const [siteCount, productCount, finishedCount] = await Promise.all([
     prisma.site.count({ where: { isDeleted: false } }),
-    prisma.product.count({ where: { isDeleted: false } }),
+    prisma.product.count({
+      where: { isDeleted: false, status: { notIn: ["完了", "出荷済"] } },
+    }),
     prisma.product.count({
       where: { isDeleted: false, status: { in: ["完了", "出荷済"] } },
     }),
@@ -47,8 +49,8 @@ export default async function MenuPage() {
     {
       no: "04",
       title: "作業終了リスト",
-      desc: "チェック・送信が済んだ製品（フェーズ4）",
-      href: null,
+      desc: "チェック・送信が済んだ製品",
+      href: "/finished",
       badge: finishedCount,
       quiet: true,
     },
@@ -61,6 +63,9 @@ export default async function MenuPage() {
           製作・現場管理
           <div className="hsub">大栄製作所</div>
         </h1>
+        <Link className="btn ghost" href="/settings" aria-label="設定" style={{ color: "#fff", padding: "0 2px", fontSize: 16 }}>
+          ⚙
+        </Link>
       </div>
 
       <div className="wrap">
@@ -79,23 +84,15 @@ export default async function MenuPage() {
               )}
             </>
           );
-          return m.href ? (
+          return (
             <Link className="menu" href={m.href} key={m.no}>
               {content}
             </Link>
-          ) : (
-            <div className="menu" style={{ opacity: 0.55 }} key={m.no}>
-              {content}
-            </div>
           );
         })}
 
-        <div className="note">
-          作業終了リスト・工程の進捗管理・完成チェックは次のフェーズで追加します。
-        </div>
-
         <form action={logout}>
-          <button className="btn ghost wide" type="submit">
+          <button className="btn ghost wide" type="submit" style={{ marginTop: 24 }}>
             ログアウト
           </button>
         </form>

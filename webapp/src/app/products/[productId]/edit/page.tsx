@@ -4,6 +4,7 @@ import { ProductForm } from "../../ProductForm";
 import { updateProduct, deleteProduct } from "../../actions";
 import { DeleteSection } from "@/components/DeleteSection";
 import { AppHeader } from "@/components/AppHeader";
+import { getSettingJsonArray, SETTING_KEYS, DEFAULT_MATERIAL_OPTIONS, DEFAULT_FINISH_OPTIONS } from "@/lib/settings";
 
 export default async function EditProductPage({
   params,
@@ -13,12 +14,16 @@ export default async function EditProductPage({
   const { productId: productIdStr } = await params;
   const productId = Number(productIdStr);
 
-  const [product, processCount, checkRecordCount, fileCount] = await Promise.all([
-    prisma.product.findUnique({ where: { productId }, include: { site: true } }),
-    prisma.process.count({ where: { productId } }),
-    prisma.checkRecord.count({ where: { productId } }),
-    prisma.file.count({ where: { productId } }),
-  ]);
+  const [product, processCount, checkRecordCount, fileCount, materialOptions, finishOptions, vendorNames] =
+    await Promise.all([
+      prisma.product.findUnique({ where: { productId }, include: { site: true } }),
+      prisma.process.count({ where: { productId } }),
+      prisma.checkRecord.count({ where: { productId } }),
+      prisma.file.count({ where: { productId } }),
+      getSettingJsonArray(SETTING_KEYS.materialOptions, DEFAULT_MATERIAL_OPTIONS),
+      getSettingJsonArray(SETTING_KEYS.finishOptions, DEFAULT_FINISH_OPTIONS),
+      getSettingJsonArray(SETTING_KEYS.vendorNames, []),
+    ]);
 
   if (!product || product.isDeleted) notFound();
 
@@ -49,6 +54,9 @@ export default async function EditProductPage({
             siteName: product.site.siteName,
             orderNumber: product.site.orderNumber,
           }}
+          materialOptions={materialOptions}
+          finishOptions={finishOptions}
+          vendorNames={vendorNames}
           submitLabel="変更を保存"
           showStatusAndActualReturn
           initial={{

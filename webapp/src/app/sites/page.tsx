@@ -27,7 +27,10 @@ export default async function SiteListPage({
     },
     orderBy: { siteName: "asc" },
     include: {
-      products: { where: { isDeleted: false }, select: { materialStatus: true } },
+      products: {
+        where: { isDeleted: false, status: { notIn: ["完了", "出荷済"] } },
+        select: { materialStatus: true },
+      },
     },
   });
 
