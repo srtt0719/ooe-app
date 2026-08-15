@@ -20,7 +20,9 @@ export default async function EditSitePage({
       orderBy: { userName: "asc" },
       select: { userId: true, userName: true },
     }),
-    prisma.product.count({ where: { siteId, isDeleted: false } }),
+    prisma.product.count({
+      where: { siteId, isDeleted: false, status: { notIn: ["完了", "出荷済"] } },
+    }),
     prisma.file.count({ where: { siteId } }),
   ]);
 
@@ -29,7 +31,7 @@ export default async function EditSitePage({
   const boundUpdate = updateSite.bind(null, siteId);
   const boundDelete = deleteSite.bind(null, siteId);
 
-  const impactParts = [`製品 ${productCount}件`];
+  const impactParts = [`進行中の製品 ${productCount}件`];
   if (fileCount > 0) impactParts.push(`添付ファイル ${fileCount}件`);
 
   return (
@@ -54,7 +56,7 @@ export default async function EditSitePage({
         />
         <DeleteSection
           label="この現場"
-          impactText={`${impactParts.join("・")}も一覧に表示されなくなります。`}
+          impactText={`${impactParts.join("・")}も一覧に表示されなくなります（完成チェック済みの記録は作業終了リストに残ります）。`}
           action={boundDelete}
         />
       </div>

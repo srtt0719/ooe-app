@@ -31,11 +31,8 @@ export default async function SiteDetailPage({
 
   if (!site || site.isDeleted) notFound();
 
-  // 「空になった現場」の判定は、状態を問わずすべての製品が0件であることを見る
-  // (完成チェック済みなど作業終了リスト側にある製品はここでは表示されないため)
-  const totalProductCount = await prisma.product.count({
-    where: { siteId, isDeleted: false },
-  });
+  // 完成チェック済み・出荷済の製品は現場を削除しても記録として残るため、
+  // 「空になった現場」の判定はここに表示されている進行中の製品だけで見てよい。
   const boundDeleteSite = deleteSite.bind(null, siteId);
 
   return (
@@ -117,10 +114,10 @@ export default async function SiteDetailPage({
           </Link>
         ))}
 
-        {totalProductCount === 0 && (
+        {site.products.length === 0 && (
           <DeleteSection
             label="この現場"
-            impactText="製品が登録されていない現場です。削除すると一覧に表示されなくなります。"
+            impactText="進行中の製品はありません。削除すると一覧に表示されなくなります（完成チェック済みの記録があれば作業終了リストに残ります）。"
             action={boundDeleteSite}
           />
         )}

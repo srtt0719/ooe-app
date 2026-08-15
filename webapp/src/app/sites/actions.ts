@@ -39,10 +39,12 @@ export async function updateSite(
 }
 
 export async function deleteSite(siteId: number) {
-  // 現場を削除すると、確認画面で示した通りその現場の製品も一覧から見えなくする。
+  // 現場を削除すると、確認画面で示した通り進行中の製品は一覧から見えなくする。
+  // ただし完成チェック済み・出荷済の製品は請求・実績集計の記録として残すため、
+  // 作業終了リストからは消さない(仕様書4-7)。
   await prisma.$transaction([
     prisma.product.updateMany({
-      where: { siteId },
+      where: { siteId, status: { notIn: ["完了", "出荷済"] } },
       data: { isDeleted: true },
     }),
     prisma.site.update({
