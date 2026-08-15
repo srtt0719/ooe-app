@@ -5,6 +5,8 @@ import { fmtDate, isNear } from "@/lib/format";
 import { DAYS_BEFORE_NEAR } from "@/lib/constants";
 import { AppHeader } from "@/components/AppHeader";
 import { ProgressMeter } from "@/components/ProgressMeter";
+import { DeleteSection } from "@/components/DeleteSection";
+import { deleteSite } from "../actions";
 
 export default async function SiteDetailPage({
   params,
@@ -28,6 +30,13 @@ export default async function SiteDetailPage({
   });
 
   if (!site || site.isDeleted) notFound();
+
+  // 「空になった現場」の判定は、状態を問わずすべての製品が0件であることを見る
+  // (完成チェック済みなど作業終了リスト側にある製品はここでは表示されないため)
+  const totalProductCount = await prisma.product.count({
+    where: { siteId, isDeleted: false },
+  });
+  const boundDeleteSite = deleteSite.bind(null, siteId);
 
   return (
     <div>
@@ -107,6 +116,14 @@ export default async function SiteDetailPage({
             <ProgressMeter processes={product.processes} compact />
           </Link>
         ))}
+
+        {totalProductCount === 0 && (
+          <DeleteSection
+            label="この現場"
+            impactText="製品が登録されていない現場です。削除すると一覧に表示されなくなります。"
+            action={boundDeleteSite}
+          />
+        )}
       </div>
     </div>
   );
