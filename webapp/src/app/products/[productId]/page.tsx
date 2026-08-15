@@ -8,7 +8,6 @@ import { ProcessRow } from "@/components/ProcessRow";
 import { buildAlertInfo } from "@/lib/processAlert";
 import { getTemplatesWithProcesses } from "@/lib/processTemplates";
 import { applyTemplateToProduct, currentUserName } from "../processActions";
-import { MaterialDetailSection } from "@/components/MaterialDetailSection";
 
 export default async function ProductDetailPage({
   params,
@@ -23,7 +22,6 @@ export default async function ProductDetailPage({
     include: {
       site: true,
       processes: { orderBy: { sortOrder: "asc" } },
-      materialDetails: { orderBy: { detailId: "asc" } },
     },
   });
 
@@ -174,8 +172,6 @@ export default async function ProductDetailPage({
             ))}
           </div>
         )}
-
-        <MaterialDetailSection productId={productId} details={product.materialDetails} />
 
         {product.status === "完了" || product.status === "出荷済" ? (
           <div className="chips" style={{ justifyContent: "center", marginTop: 16 }}>
