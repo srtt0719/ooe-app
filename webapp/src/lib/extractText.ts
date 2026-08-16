@@ -1,5 +1,5 @@
 import iconv from "iconv-lite";
-import pdfParse from "pdf-parse";
+import { extractText as extractPdfPages, getDocumentProxy } from "unpdf";
 
 // 日本語のDXFは(古いAutoCADの既定である)Shift-JISで保存されていることが多い。
 // UTF-8として妥当なバイト列でなければShift-JISとして読み直す。
@@ -40,9 +40,10 @@ export function extractDxfText(buf: Buffer): string | null {
 
 export async function extractPdfText(buf: Buffer): Promise<string | null> {
   try {
-    const data = await pdfParse(buf);
-    const text = (data.text ?? "").trim();
-    return text || null;
+    const doc = await getDocumentProxy(new Uint8Array(buf));
+    const { text } = await extractPdfPages(doc, { mergePages: true });
+    const trimmed = text.trim();
+    return trimmed || null;
   } catch (e) {
     console.error("PDF text extraction failed", e);
     return null;
