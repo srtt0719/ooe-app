@@ -5,7 +5,8 @@ import { extBadgeClass, extOf } from "@/lib/fileCategory";
 import { AppHeader } from "@/components/AppHeader";
 import { UploadArea } from "./UploadArea";
 import { FileMemoField } from "./FileMemoField";
-import { uploadFiles, updateFileMemo } from "./actions";
+import { DeleteFileButton } from "./DeleteFileButton";
+import { uploadFiles, updateFileMemo, deleteFile } from "./actions";
 
 export default async function SiteFilesPage({
   params,
@@ -112,9 +113,12 @@ export default async function SiteFilesPage({
                 ))}
               </div>
               {photos.map((f) => (
-                <div key={f.fileId} style={{ marginTop: 8 }}>
-                  <div className="fname">{f.fileName}</div>
-                  <FileMemoField memo={f.memo} action={updateFileMemo.bind(null, f.fileId, siteId)} />
+                <div key={f.fileId} style={{ marginTop: 8, display: "flex", gap: 8, alignItems: "flex-start" }}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div className="fname">{f.fileName}</div>
+                    <FileMemoField memo={f.memo} action={updateFileMemo.bind(null, f.fileId, siteId)} />
+                  </div>
+                  <DeleteFileButton fileName={f.fileName ?? ""} action={deleteFile.bind(null, f.fileId, siteId)} />
                 </div>
               ))}
             </div>
@@ -157,9 +161,12 @@ function FileRow({
         <div className="fname">{name}</div>
         <FileMemoField memo={file.memo} action={updateFileMemo.bind(null, file.fileId, siteId)} />
       </div>
-      <a className="btn ghost" href={`/api/files/${file.fileId}`} target="_blank" rel="noreferrer">
-        開く
-      </a>
+      <div style={{ display: "flex", gap: 6 }}>
+        <a className="btn ghost" href={`/api/files/${file.fileId}`} target="_blank" rel="noreferrer">
+          開く
+        </a>
+        <DeleteFileButton fileName={name} action={deleteFile.bind(null, file.fileId, siteId)} />
+      </div>
     </div>
   );
 }
