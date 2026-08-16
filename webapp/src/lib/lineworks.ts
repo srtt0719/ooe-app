@@ -62,7 +62,7 @@ async function getAccessToken(creds: Credentials): Promise<string> {
     grant_type: "urn:ietf:params:oauth:grant-type:jwt-bearer",
     client_id: creds.clientId,
     client_secret: creds.clientSecret,
-    scope: "bot bot.message",
+    scope: "bot.message",
   });
   const res = await fetch(TOKEN_URL, {
     method: "POST",
