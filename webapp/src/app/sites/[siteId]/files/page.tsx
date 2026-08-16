@@ -32,6 +32,7 @@ export default async function SiteFilesPage({
             OR: [
               { fileName: { contains: query, mode: "insensitive" } },
               { memo: { contains: query, mode: "insensitive" } },
+              { extractedText: { contains: query, mode: "insensitive" } },
             ],
           }
         : {}),
@@ -58,7 +59,7 @@ export default async function SiteFilesPage({
             className="search"
             name="q"
             defaultValue={query}
-            placeholder="ファイル名・メモで検索"
+            placeholder="ファイル名・メモ・図面内の文字で検索"
           />
         </form>
 
