@@ -1,28 +1,43 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState, useTransition } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { upload } from "@vercel/blob/client";
 
 export function UploadArea({
-  uploadAction,
+  siteId,
+  recordAction,
 }: {
-  uploadAction: (formData: FormData) => Promise<void>;
+  siteId: number;
+  recordAction: (info: { fileName: string; pathname: string }) => Promise<void>;
 }) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
-  const [pending, startTransition] = useTransition();
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [dragOver, setDragOver] = useState(false);
 
   const submitFiles = useCallback(
-    (fileList: FileList | File[]) => {
+    async (fileList: FileList | File[]) => {
       const files = Array.from(fileList);
       if (files.length === 0) return;
-      const formData = new FormData();
-      for (const f of files) formData.append("files", f);
-      startTransition(() => {
-        uploadAction(formData);
-      });
+      setBusy(true);
+      setError(null);
+      try {
+        for (const file of files) {
+          const blob = await upload(`sites/${siteId}/${Date.now()}-${file.name}`, file, {
+            access: "private",
+            handleUploadUrl: "/api/blob/upload",
+          });
+          await recordAction({ fileName: file.name, pathname: blob.pathname });
+        }
+      } catch (e) {
+        console.error(e);
+        setError("アップロードに失敗しました。通信環境をご確認のうえ、もう一度お試しください。");
+      } finally {
+        setBusy(false);
+      }
     },
-    [uploadAction],
+    [siteId, recordAction],
   );
 
   useEffect(() => {
@@ -49,13 +64,13 @@ export function UploadArea({
       }}
       style={dragOver ? { background: "#eef0ec" } : undefined}
     >
-      <b>{pending ? "アップロード中…" : "資料を追加する"}</b>
+      <b>{busy ? "アップロード中…" : "資料を追加する"}</b>
       <span>図面・写真・その他 なんでも入れられます</span>
       <div className="dbtns">
         <button
           type="button"
           className="btn"
-          disabled={pending}
+          disabled={busy}
           onClick={() => fileInputRef.current?.click()}
         >
           ファイルを選ぶ
@@ -63,13 +78,14 @@ export function UploadArea({
         <button
           type="button"
           className="btn ghost"
-          disabled={pending}
+          disabled={busy}
           onClick={() => cameraInputRef.current?.click()}
         >
           写真を撮る
         </button>
       </div>
       <div className="dhint">PCならこの枠にドラッグ&ドロップ、貼り付け（Ctrl+V）も使えます</div>
+      {error && <p className="errtext">{error}</p>}
 
       <input
         ref={fileInputRef}

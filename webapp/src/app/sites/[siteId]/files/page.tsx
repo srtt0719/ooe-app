@@ -6,7 +6,7 @@ import { AppHeader } from "@/components/AppHeader";
 import { UploadArea } from "./UploadArea";
 import { FileMemoField } from "./FileMemoField";
 import { DeleteFileButton } from "./DeleteFileButton";
-import { uploadFiles, updateFileMemo, deleteFile } from "./actions";
+import { recordUploadedFile, updateFileMemo, deleteFile } from "./actions";
 
 export default async function SiteFilesPage({
   params,
@@ -45,13 +45,13 @@ export default async function SiteFilesPage({
     .sort((a, b) => b.uploadedAt.getTime() - a.uploadedAt.getTime());
   const others = files.filter((f) => f.category === "その他");
 
-  const boundUpload = uploadFiles.bind(null, siteId);
+  const boundRecord = recordUploadedFile.bind(null, siteId);
 
   return (
     <div>
       <AppHeader title="資料" subtitle={site.siteName} backHref={`/sites/${site.siteId}`} />
       <div className="wrap">
-        <UploadArea uploadAction={boundUpload} />
+        <UploadArea siteId={siteId} recordAction={boundRecord} />
 
         <form>
           <input

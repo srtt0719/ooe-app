@@ -1,31 +1,27 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { put, del } from "@vercel/blob";
+import { del } from "@vercel/blob";
 import { prisma } from "@/lib/prisma";
 import { categorize, extOf } from "@/lib/fileCategory";
 
-export async function uploadFiles(siteId: number, formData: FormData) {
-  const files = formData.getAll("files").filter((f): f is File => f instanceof File && f.size > 0);
-  if (files.length === 0) return;
-
-  for (const file of files) {
-    const ext = extOf(file.name);
-    const blob = await put(`sites/${siteId}/${Date.now()}-${file.name}`, file, {
-      access: "private",
-      addRandomSuffix: true,
-    });
-    await prisma.file.create({
-      data: {
-        siteId,
-        fileName: file.name,
-        fileType: ext ? ext.toUpperCase() : null,
-        filePath: blob.pathname,
-        category: categorize(file.name),
-        originalName: file.name,
-      },
-    });
-  }
+// ブラウザからBlobへ直接アップロードした後、DBにファイル情報だけを記録する。
+// (Server Actionはリクエスト本文が既定で1MBまでのため、写真や図面の実体は経由させない)
+export async function recordUploadedFile(
+  siteId: number,
+  info: { fileName: string; pathname: string },
+) {
+  const ext = extOf(info.fileName);
+  await prisma.file.create({
+    data: {
+      siteId,
+      fileName: info.fileName,
+      fileType: ext ? ext.toUpperCase() : null,
+      filePath: info.pathname,
+      category: categorize(info.fileName),
+      originalName: info.fileName,
+    },
+  });
 
   revalidatePath(`/sites/${siteId}/files`);
   revalidatePath(`/sites/${siteId}`);
