@@ -54,3 +54,5 @@ skills-lock.json
 # 動作確認用の一時スクリプト(コミット対象外)
 /verify-*.mjs
 /inspect-*.mjs
+
+.env*

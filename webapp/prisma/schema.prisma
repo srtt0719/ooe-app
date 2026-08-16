@@ -176,7 +176,7 @@ model MaterialDetail {
   @@map("material_details")
 }
 
-// ---------- 3-9 ファイル(実体はGoogle Drive。DBにはパスのみ) ----------
+// ---------- 3-9 ファイル(実体はVercel Blob。DBにはURLのみ) ----------
 model File {
   fileId          Int      @id @default(autoincrement()) @map("file_id")
   siteId          Int?     @map("site_id")
@@ -191,6 +191,7 @@ model File {
   extractedText   String?  @map("extracted_text")
   matchStatus     String?  @map("match_status")
   matchConfidence Decimal? @map("match_confidence")
+  memo            String?
   uploadedAt      DateTime @default(now()) @map("uploaded_at")
 
   @@index([siteId])

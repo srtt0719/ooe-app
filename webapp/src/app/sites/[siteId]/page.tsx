@@ -26,6 +26,7 @@ export default async function SiteDetailPage({
         orderBy: { productName: "asc" },
         include: { processes: { orderBy: { sortOrder: "asc" } } },
       },
+      _count: { select: { files: true } },
     },
   });
 
@@ -71,6 +72,15 @@ export default async function SiteDetailPage({
           {site.siteAddress && <div className="sub" style={{ marginTop: 9 }}>{site.siteAddress}</div>}
           {site.note && <div className="sub" style={{ marginTop: 5 }}>{site.note}</div>}
         </div>
+
+        <Link className="menu" href={`/sites/${site.siteId}/files`} style={{ marginTop: 9 }}>
+          <div className="mno">📎</div>
+          <div className="mtxt">
+            <b>資料</b>
+            <span>図面・写真・その他をまとめて置く</span>
+          </div>
+          <div className="mbadge quiet">{site._count.files}</div>
+        </Link>
 
         <div className="eyebrow">
           製品 <span className="count">{site.products.length}</span>
