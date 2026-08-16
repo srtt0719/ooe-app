@@ -1,7 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { setSetting, setSettingJsonArray, SETTING_KEYS } from "@/lib/settings";
+import { setSetting, setSettingJsonArray, getSettings, SETTING_KEYS, DEFAULT_CHECK_TEMPLATE } from "@/lib/settings";
+import { sendToChannel } from "@/lib/lineworks";
 
 export async function saveCheckNotifySettings(formData: FormData) {
   await setSetting(SETTING_KEYS.notifyCheckGroup, String(formData.get("notifyCheckGroup") ?? "").trim());
@@ -9,7 +10,44 @@ export async function saveCheckNotifySettings(formData: FormData) {
     SETTING_KEYS.notifyCheckFallbackUser,
     String(formData.get("notifyCheckFallbackUser") ?? "").trim(),
   );
+  await setSetting(
+    SETTING_KEYS.notifyCheckTemplate,
+    String(formData.get("notifyCheckTemplate") ?? "").trim() || DEFAULT_CHECK_TEMPLATE,
+  );
   revalidatePath("/settings");
+}
+
+// 秘密情報は画面に値を送り返さない(伏字表示)ため、空欄で送信された項目は
+// 「変更しない」とみなして現在値を維持する。
+export async function saveLineWorksConnection(formData: FormData) {
+  const fields: { key: string; name: string }[] = [
+    { key: SETTING_KEYS.lineworksClientId, name: "clientId" },
+    { key: SETTING_KEYS.lineworksClientSecret, name: "clientSecret" },
+    { key: SETTING_KEYS.lineworksServiceAccount, name: "serviceAccount" },
+    { key: SETTING_KEYS.lineworksPrivateKey, name: "privateKey" },
+    { key: SETTING_KEYS.lineworksBotId, name: "botId" },
+  ];
+  for (const { key, name } of fields) {
+    const value = String(formData.get(name) ?? "").trim();
+    if (value) await setSetting(key, value);
+  }
+  revalidatePath("/settings");
+}
+
+type TestResult = { ok: boolean; error?: string };
+
+export async function sendTestCheckNotification(): Promise<TestResult> {
+  const s = await getSettings([SETTING_KEYS.notifyCheckGroup]);
+  const channelId = s[SETTING_KEYS.notifyCheckGroup];
+  if (!channelId) return { ok: false, error: "送信先グループ(チャンネルID)が未設定です" };
+  return sendToChannel(channelId, "【テスト送信】完成チェック通知の設定確認です。");
+}
+
+export async function sendTestDailyNotification(): Promise<TestResult> {
+  const s = await getSettings([SETTING_KEYS.notifyDailyGroup]);
+  const channelId = s[SETTING_KEYS.notifyDailyGroup];
+  if (!channelId) return { ok: false, error: "送信先グループ(チャンネルID)が未設定です" };
+  return sendToChannel(channelId, "【テスト送信】朝のまとめ通知の設定確認です。");
 }
 
 export async function saveDailySettings(formData: FormData) {

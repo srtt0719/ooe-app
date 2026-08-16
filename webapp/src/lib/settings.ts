@@ -42,6 +42,7 @@ export async function setSettingJsonArray(key: string, values: string[]): Promis
 export const SETTING_KEYS = {
   notifyCheckGroup: "notify_check_group",
   notifyCheckFallbackUser: "notify_check_fallback_user",
+  notifyCheckTemplate: "notify_check_template",
   notifyDailyGroup: "notify_daily_group",
   notifyDailyTime: "notify_daily_time",
   notifyDaysBefore: "notify_days_before",
@@ -52,7 +53,15 @@ export const SETTING_KEYS = {
   materialOptions: "material_options",
   finishOptions: "finish_options",
   vendorNames: "vendor_names",
+  lineworksClientId: "lineworks_client_id",
+  lineworksClientSecret: "lineworks_client_secret",
+  lineworksServiceAccount: "lineworks_service_account",
+  lineworksPrivateKey: "lineworks_private_key",
+  lineworksBotId: "lineworks_bot_id",
 } as const;
+
+export const DEFAULT_CHECK_TEMPLATE =
+  "【完成チェック】{product}（{site}）\nチェック結果：{result}\nチェック者：{checker}";
 
 export const DEFAULT_MATERIAL_OPTIONS = ["SS400", "SUS304", "SPCC", "アルミ", "その他"];
 export const DEFAULT_FINISH_OPTIONS = [

@@ -238,6 +238,12 @@ body {
   margin: 8px 0 0;
 }
 
+.oktext {
+  color: var(--patina);
+  font-size: 13px;
+  margin: 8px 0 0;
+}
+
 .note {
   font-size: 12px;
   color: var(--steel);
